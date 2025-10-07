@@ -1,0 +1,225 @@
+Cancel
+Send
+ChatGPT said:
+
+Perfect ✅ — now we’re doing this exactly right, Abhishek 👏
+
+Since your Spark practical exam will be conducted on Google Colab, you need a clean, reusable setup that works for all your Spark practicals (1 → 10) — including RDDs, DataFrames, SQL, MLlib, and file operations.
+
+Let’s build that universal setup block first.
+Just run this once per session at the top of your Colab notebook — then you can perform all Spark-based practicals smoothly.
+
+🔧 🔥 Spark + Hadoop Environment Setup for Google Colab
+🧩 STEP 1 — Install Java, Spark & FindSpark
+!apt-get install openjdk-11-jdk-headless -qq > /dev/null
+!wget -q https://downloads.apache.org/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
+!tar xf spark-3.5.0-bin-hadoop3.tgz
+!pip install -q findspark pyspark
+
+🧩 STEP 2 — Set Environment Variables
+import os
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
+os.environ["SPARK_HOME"] = "/content/spark-3.5.0-bin-hadoop3"
+os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
+
+🧩 STEP 3 — Initialize Spark
+import findspark
+findspark.init()
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder \
+    .appName("Spark_Practicals_Colab") \
+    .config("spark.ui.showConsoleProgress", "false") \
+    .getOrCreate()
+
+spark
+
+🧩 STEP 4 — Import Common Libraries
+from pyspark.sql import Row
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+from pyspark.ml import Pipeline
+from pyspark.ml.feature import VectorAssembler, StringIndexer
+from pyspark.ml.classification import LogisticRegression
+
+🧩 STEP 5 — (For XML or Avro Support)
+
+If your practical includes XML or Avro files, install these extra JARs:
+
+# XML support
+!wget -q https://repo1.maven.org/maven2/com/databricks/spark-xml_2.12/0.15.0/spark-xml_2.12-0.15.0.jar -P /content/spark-3.5.0-bin-hadoop3/jars/
+
+# Avro support
+!wget -q https://repo1.maven.org/maven2/org/apache/spark/spark-avro_2.12/3.5.0/spark-avro_2.12-3.5.0.jar -P /content/spark-3.5.0-bin-hadoop3/jars/
+
+
+(Run only if you plan to use XML or Avro.)
+
+🧩 STEP 6 — Check Spark Version & Test Session
+print("🔥 Spark Version:", spark.version)
+df_test = spark.createDataFrame([(1, "Abhishek"), (2, "Ashwin")], ["ID", "Name"])
+df_test.show()
+
+
+If this shows output correctly, your environment is 100 % ready for:
+
+RDDs
+
+DataFrames
+
+SQL
+
+Aggregations
+
+MLlib
+
+File reads/writes (CSV, JSON, Parquet, Avro, XML)
+
+🧭 Optional (for Visualization / Testing)
+
+You can also install Pandas + Matplotlib to quickly inspect Spark outputs:
+
+!pip install -q pandas matplotlib
+
+✅ After this setup
+
+You can directly continue running any of the following practicals:
+
+RDD Operations
+
+DataFrame Operations
+
+Array & Map Operations
+
+Aggregations
+
+SQL Joins & Functions
+
+SQL Core Functions
+
+Data Source API
+
+Streaming (JSON dir only)
+
+MLlib
+
+HDFS/S3 (simulated locally)
+
+
+
+------------------------------------------
+🧠 1️⃣ How Google Colab Saves Your Work
+
+When you’re signed into Colab with your Gmail account, every notebook you create (the .ipynb file) is automatically saved in your Google Drive → “Colab Notebooks” folder.
+
+📁 Path in Drive:
+My Drive → Colab Notebooks
+
+Everything you type or run is autosaved every few seconds.
+
+⚙️ 2️⃣ How to Save Your Setup Permanently
+🪄 Step 1: Create a New Notebook
+
+Go to https://colab.research.google.com/
+
+Sign in with your Gmail ID.
+
+Click on “New Notebook” (top-right corner).
+
+Rename it →
+👉 Spark_Practicals_Setup.ipynb
+
+🪄 Step 2: Paste This Initial Setup (Full Block)
+# 🚀 SPARK ENVIRONMENT SETUP (Run this once per Colab session)
+
+# 1️⃣ Install Java, Spark & Findspark
+!apt-get install openjdk-11-jdk-headless -qq > /dev/null
+!wget -q https://downloads.apache.org/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
+!tar xf spark-3.5.0-bin-hadoop3.tgz
+!pip install -q findspark pyspark
+
+# 2️⃣ Set Environment Variables
+import os
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
+os.environ["SPARK_HOME"] = "/content/spark-3.5.0-bin-hadoop3"
+os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
+
+# 3️⃣ Initialize Spark
+import findspark
+findspark.init()
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder \
+    .appName("Spark_Practicals_Colab") \
+    .config("spark.ui.showConsoleProgress", "false") \
+    .getOrCreate()
+
+# 4️⃣ Import Common Libraries
+from pyspark.sql import Row
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+from pyspark.ml import Pipeline
+from pyspark.ml.feature import VectorAssembler, StringIndexer
+from pyspark.ml.classification import LogisticRegression
+
+print("✅ Spark Setup Complete! Version:", spark.version)
+
+🪄 Step 3: Test It Once
+
+Run all cells → It should print something like:
+
+✅ Spark Setup Complete! Version: 3.5.0
+
+🪄 Step 4: Save the Notebook
+
+Colab saves automatically, but you can also click:
+File → Save a copy in Drive
+
+Confirm it appears in Google Drive → Colab Notebooks
+
+Now your setup is stored permanently in your Google Drive — linked to your Gmail account.
+
+💾 3️⃣ How to Use It During Exam
+
+During your practical:
+
+Open Google Colab
+
+Click on “File → Open Notebook”
+
+Go to Google Drive → Colab Notebooks
+
+Open your saved notebook (e.g., Spark_Practicals_Setup.ipynb)
+
+Run setup cells
+
+Then add new cells below for your actual practical questions (RDD, DataFrame, SQL, etc.)
+
+🔄 4️⃣ Optional — Keep Backup Copies
+
+If you want to be extra safe:
+
+Save a backup copy as .ipynb on your Google Drive and email it to yourself.
+
+Or download it to your local PC:
+
+File → Download → Download .ipynb file
+
+⚡ 5️⃣ Pro Tip
+
+Create one master notebook:
+
+Spark_Practicals_Master.ipynb
+
+
+And add sections:
+
+# 1. RDD Practicals
+# 2. DataFrame Practicals
+# 3. SQL Practicals
+# 4. MLlib Practicals
+
+
+So even if you get any 3 random questions, you’ll already have all code ready to execute.
