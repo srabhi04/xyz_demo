@@ -1,0 +1,848 @@
+4️⃣ Aggregate Functions & Calculated Fields — Step-by-step
+
+Goal: practice SUM, AVG, MIN, MAX, create custom calculated fields and parameters.
+
+Open Tableau and connect to Sample - Superstore.xls. Drag Orders to the canvas and click Sheet 1.
+
+Rename the sheet: double-click the sheet tab → type Agg_Sales_by_Category.
+
+Create a simple aggregated bar chart
+3. In the Data pane, drag Category → Columns.
+4. Drag Sales → Rows. Tableau will use SUM(Sales) automatically.
+5. Click the Show Me panel → select Bar (if not already bar).
+6. Click the SUM(Sales) axis → Format or sort if needed (click the sort icon on the toolbar to sort desc).
+7. Add labels: Toolbar → Label icon or from Marks card click Label → Show mark labels.
+
+Example quick aggregates
+8. To show AVG, MIN, MAX:
+
+Right-click Sales on the Rows shelf → Measure → choose Average (AVG), then repeat in a new sheet for MIN and MAX.
+
+Or duplicate the sheet (right-click tab → Duplicate) and change measure.
+
+Create a custom calculated field — Profit Ratio
+9. Click the down arrow in Data pane → Create Calculated Field...
+10. Name it Profit Ratio. In formula box type:
+
+SUM([Profit]) / SUM([Sales])
+
+
+Click OK. A new measure Profit Ratio appears in Measures.
+
+Build a chart: Drag Category → Columns, drag Profit Ratio → Rows.
+
+Format percent: Right-click Profit Ratio pill → Default Properties → Number Format → Percentage → set decimals.
+
+Create a parameter — Top N control
+14. Right-click in Data → Create → Parameter...
+
+Name: Top N
+
+Data type: Integer
+
+Current value: 5
+
+Display: leave as is → Click OK.
+
+Right-click the Top N parameter → Show Parameter (shows control on the right).
+
+Use the parameter in a set to show Top N Sub-categories
+16. Right-click Sub-Category → Create → Set...
+17. In Set dialog → Top tab → Choose By field → Top: [Top N] by SUM(Sales) → Click OK.
+18. Drag the new set (e.g., Top Sub-Category) to Filters or Rows to visualize only top N.
+
+Tips / Why important
+
+Aggregations (SUM/AVG) determine how rows combine to a single number.
+
+SUM([Profit])/SUM([Sales]) returns correct aggregated ratio; avoid mixing aggregated and non-aggregated expressions incorrectly.
+
+5️⃣ Table Calculations & LOD Calculations — Step-by-step
+
+Goal: running totals, percent of total, YTD using table calcs; build FIXED/INCLUDE/EXCLUDE LOD expressions.
+
+A. Table Calculations (Running Total, Percent of Total)
+
+Create new sheet → rename TableCalc_RunningSales.
+
+Drag Order Date → Columns. Right-click it → choose Month (or MONTH(Order Date) discrete) to show months.
+
+Drag Sales → Rows. By default SUM(Sales).
+
+Convert to line or bar as desired (Marks → Line).
+
+Running Total
+5. Right-click the SUM(Sales) pill on Rows → Quick Table Calculation → Running Total.
+6. Running total will accumulate across the table.
+7. To control partitioning: right-click SUM(Sales) pill → Edit Table Calculation...
+
+In dialog choose Compute Using → Table (Across) or Table (Down) depending on layout.
+
+To restart running total each year: in Edit Table Calculation → check Specific Dimensions → select Order Date (Year) as the partition (so it restarts by year).
+
+Percent of Total
+8. Duplicate sheet or create new sheet → TableCalc_PercentOfTotal.
+9. Drag Category → Columns, Sales → Rows.
+10. Right-click SUM(Sales) → Quick Table Calculation → Percent of Total.
+11. Edit Table Calculation if needed to compute by Category across the table.
+
+Year-To-Date (YTD) Sales using table calc
+12. Create sheet YTD_Sales. Drag Order Date (Month) to Columns and Sales to Rows.
+13. Apply Quick Table Calculation → Running Total.
+14. Edit Table Calculation → set Restarting every to Order Date (Year) (or use Specific Dimensions and check Year). This computes a running total that restarts each year (YTD).
+
+B. Level of Detail (LOD) Expressions
+
+What they do: LOD expressions compute aggregations at a defined level, independent of view granularity.
+
+Create FIXED LOD — State Sales
+15. Create Calculated Field → name State Sales (LOD) with formula:
+
+{ FIXED [State] : SUM([Sales]) }
+
+
+Click OK. State Sales (LOD) appears as a measure (but it’s fixed-level aggregated).
+
+Use LOD in view
+17. New sheet LOD_StatePercent. Drag State → Rows.
+18. Drag Sales → Columns (shows SUM Sales by State).
+19. Drag State Sales (LOD) → Tooltip or Label if you want to see it.
+20. Create another calculated field Pct of State Sales:
+
+SUM([Sales]) / [State Sales (LOD)]
+
+
+Drag Pct of State Sales → Label. Format as percentage.
+
+INCLUDE / EXCLUDE examples
+22. INCLUDE example (adds granularity to the aggregation even if view is coarser):
+
+{ INCLUDE [Sub-Category] : SUM([Sales]) }
+
+
+EXCLUDE example (removes a dimension from aggregation even if it's in the view):
+
+{ EXCLUDE [Category] : SUM([Sales]) }
+
+
+Create small test view: put Category and Sub-Category in Rows and compare SUM([Sales]) vs {FIXED [Category]: SUM([Sales])} to see differences.
+
+Tips & checks
+
+LOD results are computed before table calculations and filters (except context filters).
+
+If your LOD doesn’t change when you change the view, that’s expected for FIXED.
+
+Use View Data or labels to verify numbers.
+
+6️⃣ Maps in Tableau — Step-by-step
+
+Goal: create symbol maps, filled maps (choropleth), pie maps, and density maps.
+
+Pre-check: make sure geographic fields recognized
+
+In Data pane, ensure State has a globe icon. If not: right-click State → Geographic Role → State/Province.
+
+A. Symbol Map (circles sized by Sales)
+
+New sheet → rename Map_Symbol_Sales.
+
+Drag State → Detail on the Marks card. Tableau will create generated latitude/longitude and a map.
+
+Change mark type to Circle (Marks card → select Circle).
+
+Drag Sales → Size to make circles proportional to Sales.
+
+Drag Sales → Color to show intensity and State → Label if you want text.
+
+Use map zoom + pan to focus on region. Add Tooltips: hover to see SUM(Sales).
+
+B. Filled Map / Choropleth (color states by sales)
+
+New sheet → Map_Filled_Sales.
+
+Drag State → Detail. On Marks card choose Map (or Filled Map in newer versions).
+
+Drag Sales → Color.
+
+Click Color → Edit Colors → choose sequential palette (default okay).
+
+Adjust Map Layers: top menu → Map → Map Layers → toggle labels, streets, land cover as you like.
+
+C. Pie Map (showing composition in each state)
+
+New sheet → Map_Pie_ByState.
+
+Drag State → Detail. Tableau creates map points.
+
+On Marks card, change mark type to Pie.
+
+Drag Sales → Angle.
+
+Drag Category → Color (so each pie slice = category).
+
+Drag Sales → Size to scale pies by total sales.
+
+Optionally add State to Label to display state names (but pies can get cluttered; use for few states).
+
+D. Density Map (heat/density of points)
+
+New sheet → Map_Density.
+
+Drag State → Detail (or use postal code / city for finer granularity).
+
+On Marks card choose Density. If Density is not shown, choose Map and then pick Density from the mark type dropdown.
+
+Drag Sales to Color if supported; density often shows concentration of records — increase sample detail by using city or lat/long for more meaningful density.
+
+E. Map interactions and tooltips
+24. Add filters: Drag Region to Filters to allow users to filter map.
+25. Add Highlight actions later when building dashboard so clicking a region highlights charts.
+
+F. Troubleshooting
+
+If map shows a single point or wrong locations: check values in State spelling match Tableau’s expected names (e.g., “New York” not “NY”).
+
+If no map appears: ensure geographic role set and internet is available for background map tiles (Tableau may need network).
+
+For very detailed spatial analysis (shapefiles / spatial joins): use the Spatial file connector (Shapefile / GeoJSON) and drag in the spatial file to the Data Source.
+
+Final practice checklist & quick troubleshooting
+
+Save each sheet with clear names.
+
+For table calculations: always Edit Table Calculation and confirm Compute Using setting. Wrong compute-using = wrong result.
+
+For LOD: try both FIXED and INCLUDE on the same view to see behavior differences.
+
+For maps: always confirm Geographic Role and clean your state/city names if something is off.
+
+If you want, I can now:
+
+Give exact example exercises for each (mini tasks you can practice in 20 minutes), OR
+
+Create a short 1-page practical journal entry for each of these three tasks (aim, steps performed, screenshots to take).
+
+Which one next?
+
+You said:
+7️⃣ Advanced Analytics in Tableau
+
+Tasks: Trend lines, forecasting, clustering, reference lines, analytics pane.
+Why Hard: Involves statistical interpretation and parameter tuning.
+🕒 Estimated Time: 50–60 min
+
+8️⃣ Interactive Dashboards
+
+Tasks: Combine multiple sheets, filters, buttons, navigation, interactivity.
+Why Hard: Requires multiple charts and layout management.
+🕒 Estimated Time: 60–75 min
+ChatGPT said:
+
+Perfect 👏 Abhishek! Let’s now go through step-by-step beginner-friendly instructions for both:
+
+👉 Practical 7: Advanced Analytics in Tableau
+👉 Practical 8: Interactive Dashboards in Tableau
+
+We’ll use the same dataset — Sample Superstore (Orders sheet) — and focus on making each step crystal clear for your practical lab or journal.
+
+🧠 7️⃣ Advanced Analytics in Tableau
+
+Goal: Add and interpret Trend Lines, Forecasting, Clustering, and Reference Lines using the Analytics pane.
+Estimated time: 50–60 min
+
+🧩 Step 1: Open Dataset
+
+Open Tableau Desktop/Public.
+
+Connect to Sample - Superstore.xls.
+
+Drag Orders sheet → canvas → click Sheet 1.
+
+📈 Step 2: Create a Sales Trend Chart
+
+Rename the sheet → Sales Trend.
+
+Drag Order Date → Columns.
+
+Drag Sales → Rows.
+
+Click on Show Me → Line Chart.
+
+From the drop-down on Order Date, choose Month or Continuous Month for smooth trend.
+
+📉 Step 3: Add Trend Line
+
+Go to Analytics pane (next to Data pane on left sidebar).
+
+Drag Trend Line → drop it onto the chart → select Linear.
+
+Tableau adds a regression line with equation & R² value.
+
+Hover over the line → you’ll see the model formula (like Sales = 12,000 + 300*Month).
+
+🟢 Interpretation:
+
+The slope shows the average increase in sales per month.
+
+The R² value (0–1) indicates how well the line fits your data.
+
+📊 Step 4: Add Forecast
+
+In the same sheet, open Analytics pane again.
+
+Drag Forecast → drop it onto the view.
+
+Tableau automatically predicts future sales using exponential smoothing.
+
+Hover → blue shaded area = forecast range (upper/lower bounds).
+
+Right-click forecast → Forecast → Describe Forecast to see model details.
+
+🟢 Tip: You can edit forecast length → Forecast → Options → choose Forecast Length (e.g., 6 months).
+
+🧮 Step 5: Add Reference Lines
+
+New sheet → rename it Profit vs Sales.
+
+Drag Sales → Columns, Profit → Rows → Show Me → Scatter Plot.
+
+From Analytics pane → drag Reference Line → drop onto the view → choose Table.
+
+Choose to show Average Sales and Average Profit.
+
+You’ll now see two reference lines (horizontal & vertical).
+
+These divide chart into 4 quadrants (e.g., high-profit/high-sales vs low-profit/low-sales).
+
+Optional: drag Category → Color to differentiate product groups.
+
+🟢 Insight: Helps identify which categories fall in profitable or loss regions.
+
+🧩 Step 6: Add Clusters
+
+Stay in same scatter plot (Profit vs Sales).
+
+Go to Analytics pane → drag Cluster → drop onto view.
+
+Tableau auto-detects clusters (usually 2–4 groups).
+
+You can edit: right-click the cluster legend → Edit Clusters → change number of clusters.
+
+Each color now represents a cluster (group of states/products with similar profit-sales behavior).
+
+🟢 Tip:
+
+Tableau uses k-means clustering by default.
+
+Try dragging Discount or Quantity into Detail before clustering to include more dimensions.
+
+📑 Step 7: Save and Interpret
+
+Save workbook (File → Save As → Advanced_Analytics_Superstore.twbx).
+
+Write down insights, e.g.:
+
+“Forecast shows upward trend; Technology products have highest profit cluster; Furniture category below average profit line.”
+
+✅ End of Practical 7 Output Summary:
+
+Charts Used: Line, Scatter
+
+Analytics Applied: Trend line, Forecast, Cluster, Reference Line
+
+Learned Concepts: Regression trend, time-series forecast, K-means clustering, performance quadrants
+
+🧭 8️⃣ Interactive Dashboards in Tableau
+
+Goal: Combine multiple sheets, add filters, buttons, and navigation to create an interactive dashboard.
+Estimated time: 60–75 min
+
+🧩 Step 1: Prepare the Component Sheets
+
+You’ll create 3–4 charts before the dashboard.
+
+(A) Sales by Category (Bar Chart)
+
+Sheet → rename Sales by Category.
+
+Drag Category → Columns, Sales → Rows → choose Bar Chart.
+
+Show Labels → sort descending.
+
+(B) Sales by Region (Map)
+4. New sheet → rename Sales Map.
+5. Drag State → Detail, Sales → Color → choose Filled Map.
+
+(C) Sales over Time (Line Chart)
+6. New sheet → rename Sales Trend.
+7. Drag Order Date → Columns, Sales → Rows → choose Line Chart.
+
+(D) Profit vs Sales (Scatter Plot)
+8. New sheet → rename Profit vs Sales.
+9. Drag Sales → Columns, Profit → Rows, Category → Color → choose Circle mark.
+
+🧭 Step 2: Create Dashboard
+
+Click New Dashboard icon (bottom tab with “window+plus” symbol).
+
+Rename → Sales Dashboard.
+
+On left side → you’ll see your 4 sheets under “Sheets”.
+
+Drag them one by one onto the blank canvas.
+
+🧩 Layout Tip:
+
+Put the Line chart (Sales Trend) on top.
+
+Place Bar chart (Sales by Category) and Map side by side below.
+
+Put Scatter Plot at the bottom.
+
+🪄 Step 3: Add Filters for Interactivity
+
+Click on any chart (e.g., “Sales by Category”).
+
+From top-right of the chart → click dropdown arrow → Use as Filter.
+
+Now when you click a Category, other charts will filter automatically.
+
+Repeat for Map or Trend chart if needed.
+
+🟢 Tip:
+
+Add common filters (like Region or Year) manually:
+
+Drag Region → Filters, then right-click → Show Filter (in Dashboard view).
+
+The filter will appear on the side panel.
+
+🧭 Step 4: Add Navigation Buttons
+
+From Objects pane (left bottom) → drag Button into the dashboard.
+
+In the dialog → choose Navigate to another sheet (e.g., go to Profit vs Sales).
+
+Give a label like “View Profit Analysis”.
+
+Optionally, add another button to go Back to Main Dashboard.
+
+🧮 Step 5: Add Titles, Legends, and Formatting
+
+Double-click the dashboard title → write:
+
+“Superstore Sales & Profit Interactive Dashboard”
+
+Add text boxes for insights or headings (drag Text from Objects pane).
+
+Format colors → choose consistent theme (avoid clutter).
+
+Resize charts for equal alignment.
+
+🟢 Pro Tip: Use Floating layout for precise arrangement.
+
+📢 Step 6: Test the Interactivity
+
+Click on Furniture category in bar chart → other charts update dynamically.
+
+Select a region on the map → see filtered line and scatter charts.
+
+Click “View Profit Analysis” button → navigate to deeper view.
+
+📁 Step 7: Save & Publish
+
+Save workbook as .twbx file (Packaged Workbook).
+
+If using Tableau Public → click File → Save to Tableau Public → Sign In → Publish.
+
+Optional: Export as Image/PDF for submission.
+
+✅ End of Practical 8 Output Summary:
+
+Dashboard Includes: 4 charts + interactive filters + navigation buttons.
+
+Features Used: Filtering, Navigation, Layout design, Dashboard actions.
+
+Outcome: Interactive sales analysis view with real-time chart updates.
+
+Would you like me to now format both of these (7 & 8) into journal-style write-ups (Aim, Procedure, Result, Output Description, Insights) — so you can directly paste into your practical record file?
+
+You said:
+9️⃣ Sharing Insights with Tableau
+
+Tasks: Publish to Tableau Public/Server, embed visualizations.
+Why Hard: Requires account setup, publishing, and online configuration.
+🕒 Estimated Time: 45–60 min
+
+🔟 Data Preparation with Tableau Prep
+
+Tasks: Connect, clean, format, union/join data, build & save flows.
+Why Hard: Uses separate tool (Tableau Prep), focuses on ETL concepts.
+🕒 Estimated Time: 60–70 min
+ChatGPT said:
+
+Perfect, Abhishek 👏 You’re now entering the final and advanced Tableau practicals — which simulate real industry tasks (publishing dashboards & preparing data pipelines).
+Let’s go step-by-step for both Practical 9 and Practical 10 👇
+
+9️⃣ Sharing Insights with Tableau
+
+Objective: Publish and share your dashboard online (Tableau Public/Server) or embed it on a website.
+
+🔧 Step-by-Step Guide
+A. Prerequisites
+
+✅ You must have a Tableau Public account – create one at https://public.tableau.com
+.
+
+✅ Save your final dashboard (.twb or .twbx) that you want to publish.
+
+B. Publishing to Tableau Public
+
+Open Tableau Desktop.
+
+Load your completed dashboard workbook.
+
+Go to the menu bar → Server → Tableau Public → Save to Tableau Public As…
+
+Login to your Tableau Public account.
+
+Enter the project title (e.g., “Superstore Sales Dashboard”).
+
+Click Save — Tableau uploads your workbook to the web.
+
+Once uploaded, your default browser opens automatically with your published dashboard.
+
+C. Managing and Sharing
+
+On the Tableau Public page → click Share.
+
+You’ll see two options:
+
+Link: Copy and share directly.
+
+Embed Code: Copy HTML iframe code to embed in a blog, portfolio, or website.
+
+(Optional) Add a Description, Tags, and choose visibility (Public/Private).
+
+Click Save Changes.
+
+D. If You’re Using Tableau Server (in organizations)
+
+Go to Server → Publish Workbook.
+
+Select your Server Connection and Project Folder.
+
+Define permissions (Viewer, Editor, etc.).
+
+Click Publish → Dashboard becomes accessible via your company’s Tableau Server.
+
+🧠 Pro Tips
+
+Always check Data Sources → if it’s live, Tableau Public will require embedding data (extract it).
+
+Ensure sensitive data is removed before publishing.
+
+Use “View” and “Like” stats on Tableau Public to showcase engagement in your portfolio.
+
+🕒 Estimated Time: 45–60 min
+
+🔟 Data Preparation with Tableau Prep
+
+Objective: Clean, combine, and format raw data using Tableau Prep Builder or Prep integrated in Tableau Desktop (latest versions).
+
+🔧 Step-by-Step Guide
+A. Launch Tableau Prep
+
+Open Tableau Prep Builder (or from Tableau Desktop → Start Page → “Start Tableau Prep”).
+
+In the Start page, click Connect to Data.
+
+B. Connect to Data
+
+Choose Microsoft Excel (e.g., “SampleSuperstore.xls”).
+
+Select relevant sheets → drag them into the workspace.
+
+Data preview appears → Tableau automatically recognizes field types.
+
+C. Data Cleaning and Profiling
+
+Click each field (column) → check for null values, outliers, data types.
+
+Fix data types (e.g., change “Order Date” → Date).
+
+Rename unclear fields (Right-click → Rename).
+
+Remove unneeded fields (Right-click → Remove).
+
+D. Combine Data
+
+Option 1: Union (stack rows)
+
+Drag one sheet onto another → select “Union.”
+
+Tableau merges data vertically (same structure).
+
+Option 2: Join (merge columns)
+
+Drag one dataset beside another → select “Join.”
+
+Choose Join Type (Inner/Left/Right/Full).
+
+Select key fields (e.g., Order ID, Customer ID).
+
+E. Add Calculations or Filters
+
+Click “+” → Add Step → Clean Step.
+
+Use Calculated Field:
+
+Example: Profit Margin = [Profit] / [Sales]
+
+Filter unwanted data:
+
+Click field header → “Keep Only” / “Exclude.”
+
+F. Inspect and Output
+
+Check final dataset → verify column names and records.
+
+Click Add Output → select file type:
+
+.hyper (for Tableau Desktop use), or
+
+.csv (for external use).
+
+Choose a file location and name.
+
+Click Run Flow → Tableau generates the clean dataset.
+
+G. Save the Flow
+
+Click File → Save As → .tfl (Tableau Flow file).
+
+(Optional) To reuse: reopen the flow later to refresh or edit data.
+
+🧠 Pro Tips
+
+Use Profile Pane to spot data quality issues visually.
+
+For large data, consider sampling first (top right corner).
+
+Combine with Tableau Desktop for a complete ETL → Visualization workflow.
+
+🕒 Estimated Time: 60–70 min
+
+Would you like me to now create a “journal-ready condensed version” (1–2 pages) of Practicals 9 & 10 for submission format — similar to how we did for 1–5 earlier?
+
+You said:
+1️⃣ Introduction to Tableau
+
+Tasks: Install, navigate workspace, connect sample data, make a simple chart.
+Why Easy: Purely interface exploration and basic chart creation.
+🕒 Estimated Time: 15 min
+
+2️⃣ Adding Data Sources
+
+Tasks: Connect Excel/CSV, join/union tables, explore metadata.
+Why Easy: Focuses on data import and setup, not much analysis.
+🕒 Estimated Time: 20 min
+
+3️⃣ Creating Data Visualizations
+
+Tasks: Bar, Line, Pie, Heatmap, Bullet charts.
+Why Easy: Straightforward drag-and-drop visual creation.
+🕒 Estimated Time: 25–30 min
+ChatGPT said:
+
+Perfect, Abhishek 👏
+These are your first 3 Tableau practicals (Easy Level) — excellent for getting comfortable with Tableau’s interface and core visualization workflow.
+Below is your complete, beginner-friendly step-by-step guide for Practicals 1️⃣ to 3️⃣, ideal for journal writing or lab execution.
+
+🧩 1️⃣ Introduction to Tableau
+🎯 Objective:
+
+Install Tableau, explore the workspace, and create your first basic visualization.
+
+🔧 Steps:
+
+Download Tableau Public/Desktop:
+
+Visit https://public.tableau.com/en-us/s/download
+.
+
+Download and install Tableau Public.
+
+Launch Tableau:
+
+Open Tableau → You’ll see options like Connect, Open, and Discover.
+
+Connect Sample Data:
+
+Go to “Connect → Microsoft Excel”.
+
+Select Sample - Superstore.xls dataset.
+
+View Data Source:
+
+Tableau opens the Data Source tab → shows tables and field names.
+
+Click “Sheet 1” (bottom tab) to start building visualization.
+
+Explore Workspace:
+
+Left Panel: Data pane (Dimensions, Measures)
+
+Middle: Canvas (Rows/Columns shelves)
+
+Top: Toolbar (chart icons)
+
+Bottom: Tabs for new sheets, dashboards, stories.
+
+Create Simple Visualization:
+
+Drag Category → Columns.
+
+Drag Sales → Rows.
+
+Click Show Me → Select Bar Chart.
+
+Add Titles & Formatting:
+
+Double-click the title → “Sales by Category.”
+
+Format colors or labels (Right-click → Format).
+
+Save & Share:
+
+File → Save to Tableau Public (login required).
+
+Or File → Save As .twb (local workbook).
+
+🕒 Estimated Time: 15 min
+
+🧩 2️⃣ Adding Data Sources
+🎯 Objective:
+
+Learn to connect multiple data files, join or union them, and manage metadata.
+
+🔧 Steps:
+
+Open Tableau → Connect to Data.
+
+Select Microsoft Excel.
+
+Choose Sample - Superstore.xls.
+
+Add Another Data Source:
+
+Click “Data → New Data Source” → select another Excel/CSV file.
+
+Combine Data (Joins):
+
+Drag one table beside another → select Join.
+
+Choose common field (e.g., Order ID or Customer ID).
+
+Select Join Type: Inner, Left, Right, Full.
+
+Combine Data (Union):
+
+Drag one table below another → Union.
+
+Used when tables have same columns (e.g., 2023 and 2024 Sales).
+
+Edit Metadata:
+
+Rename fields: Right-click → Rename.
+
+Change data type: Click field icon → choose Number, Date, String.
+
+Hide unnecessary fields: Right-click → Hide.
+
+Check Data Preview:
+
+Scroll through the data grid → verify column mapping.
+
+Save the Data Source:
+
+Right-click the data source → “Extract Data” → Save extract for faster loading.
+
+Go to Sheet 1:
+
+Use combined data to start analysis.
+
+🕒 Estimated Time: 20 min
+
+🧩 3️⃣ Creating Data Visualizations
+🎯 Objective:
+
+Use different chart types to visualize data such as sales and profit.
+
+🔧 Steps:
+
+Load Sample Data:
+
+Connect to Sample - Superstore.xls.
+
+Go to Sheet 1.
+
+Bar Chart:
+
+Drag Category → Columns.
+
+Drag Sales → Rows.
+
+Click Show Me → Bar Chart.
+
+Line Chart:
+
+Create new sheet → drag Order Date → Columns.
+
+Drag Sales → Rows.
+
+Click Show Me → Line Chart.
+
+Pie Chart:
+
+New sheet → drag Category → Color (Marks pane).
+
+Drag Sales → Angle (Marks pane).
+
+Click Show Me → Pie Chart.
+
+Heat Map:
+
+New sheet → drag Category → Rows, Sub-Category → Columns.
+
+Drag Sales → Color → Click Show Me → Highlight Table (Heatmap).
+
+Bullet Chart:
+
+New sheet → drag Category → Rows, Sales → Columns.
+
+Click Show Me → Bullet Chart.
+
+Enhance Visuals:
+
+Add labels (Right-click → Show Mark Labels).
+
+Apply color palette (Color → Edit Colors).
+
+Add title (Double-click at top).
+
+Save Sheets:
+
+Rename sheets (e.g., “Bar Chart,” “Line Chart,” etc.)
+
+Save project as .twbx.
+
+🕒 Estimated Time: 25–30 min
+
+✅ Summary Table:
+
+Practical	Title	Level	Key Skills	Time
+1	Introduction to Tableau	Easy	Interface, Data Import, Bar Chart	15 min
+2	Adding Data Sources	Easy	Joins, Unions, Metadata	20 min
+3	Creating Data Visualizations	Easy	Bar, Line, Pie, Heatmap	25–30 min
